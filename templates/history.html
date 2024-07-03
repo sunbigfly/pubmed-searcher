@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- The title of the webpage is dynamically set by the server -->
+    <title>{{ title }}</title>
+
+    <script type="text/javascript" charset="utf8" src="{{ url_for('static', filename='js/jquery-3.5.1.js') }}"></script>
+    <!-- Importing DataTables JavaScript from local static folder -->
+    <script src="{{ url_for('static', filename='js/dataTables.js') }}"></script>
+    <!-- Importing DataTables CSS from local static folder -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dataTables.dataTables.css') }}">
+    <!-- Importing jQuery from local static folder -->
+
+    <style>
+        /* Styling for the result table */
+        #resultTable {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            font-size: 15px;
+            table-layout: auto; /* Allow columns to adjust based on content */
+        }
+
+        /* Styling for the table headers */
+        #resultTable th {
+            text-align: center; /* Center text horizontally */
+            vertical-align: middle; /* Center text vertically */
+            font-size: 15px; /* Ensure the font size matches the table cells */
+        }
+
+        /* Styling for the table cells */
+        #resultTable td {
+            max-width: 1px;
+            overflow: hidden;
+            text-align: center; /* Center text horizontally */
+            vertical-align: middle; /* Center text vertically */
+            text-overflow: ellipsis;
+            white-space: nowrap; /* Prevent content from wrapping */
+        }
+
+        /* Styling for the table cells when hovered */
+        #resultTable td:hover {
+            overflow: visible;
+            white-space: normal;
+            font-size: 15px;
+        }
+
+        /* Styling for the links in the table cells */
+        #resultTable td a {
+            font-size: 15px; /* Or any other size you want */
+            text-decoration: none;
+        }
+
+        /* Styling for the divs in the table cells */
+        #resultTable td div {
+            font-size: 13px; /* Set to a size smaller than the title */
+            display: none;
+        }
+
+        /* Styling for the table container */
+        .table-container {
+            width: 88%;
+            left: 45px;
+            margin: 5% auto 0;
+            background-color: rgba(255, 255, 255, 0);
+            opacity: 1;
+            position: relative; /* 添加这一行 */
+            z-index: 1; /* 添加这一行 */
+        }
+
+        /* Styling for the unclicked links */
+        .unclicked {
+            color: blue; /* Change this to the color you want for unclicked links */
+        }
+
+        /* Styling for the clicked links */
+        .clicked {
+            color: purple; /* Change this to the color you want for clicked links */
+        }
+
+        /* Styling for the separator */
+        .separator {
+            width: 100%; /* 100% width to fill the entire container */
+            height: 1px; /* 1px height to form a thin line */
+            margin-bottom: 30px;
+            background-color: #d0cece; /* Black background color */
+        }
+
+        /* Styling for the form group */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px; /* Add this line to set spacing */
+            margin-left: 50px;
+            width: 110px
+        }
+
+        /* Styling for the blue background */
+        .blue-background {
+            background-color: #112f51;
+            width: calc(100% - 6px); /* 减去左右两边的距离 */
+            margin: 0;
+            padding: 0;
+            position: fixed;
+            top: 0;
+            left: 3px; /* 左边距离3px */
+            right: 3px; /* 右边距离3px */
+            z-index: 2;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        /* Styling for the body */
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif; /* Set global font to Microsoft YaHei and specify fallback fonts */
+        }
+
+        footer {
+            color: #adaaaa;
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+        }
+
+        /* Styling for the date input fields */
+        input[type="date"] {
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+        }
+
+        /* Styling for the input fields */
+        .input-field {
+            height: 25px;
+            line-height: 25px; /* 添加这一行 */
+            padding: 0; /* 确保没有多余的内边距 */
+        }
+
+
+        /* Styling for the search query input field */
+        .search-query {
+            width: 150px; /* Add this line to set width */
+        }
+
+        /* Styling for the small labels */
+        .label-small {
+            font-size: 14px; /* Add this line to set font size */
+        }
+
+        /* Styling for the button div */
+        .button-div {
+            width: 80px; /* 你可以根据需要调整这个值 */
+        }
+
+        /* Styling for the checkboxes */
+        input[type="checkbox"] {
+            transform: scale(1.2);
+        }
+
+        .user-panel {
+            position: relative;
+            text-align: right;
+            margin-right: 10px;
+            top: -70px;
+            height: 10px;
+        }
+
+        .user-button {
+            color: #eeebeb;
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            height: 30px;
+            top: 30px;
+            left: 10px;
+            text-decoration: underline;
+            padding: 10px;
+            white-space: nowrap;
+            text-underline-offset: 5px;
+            font-size: 15px;
+            margin-left: 10px;
+        }
+
+
+        .dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 82px;
+            background-color: #112f50;
+            min-width: 10px;
+            max-height: 50px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            width: 60px;
+            height: 30px;
+        }
+
+        .dropdown a {
+            color: #ffffff;
+            padding: 12px 12px;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            white-space: nowrap;
+            font-size: 14px;
+            position: relative;
+            top: -7px;
+            right: 0;
+        }
+
+        th {
+            font-size: 14px;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            font-size: 12px;
+            border-radius: 3px;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 150px;
+            background-color: #f9f9f9;
+            color: #000;
+            text-align: left;
+            border-radius: 6px;
+            padding: 5px 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position the tooltip above the text */
+            left: 0;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* 其他样式 */
+    </style>
+
+    <script>
+        // Function to show the abstract of a result
+        function showAbstract(event, id, linkElement) {
+            // Prevent the default action of the link
+            event.preventDefault();
+            // Get the element by its id
+            const x = document.getElementById(id);
+            // If the element is currently hidden
+            if (x.style.display === "none") {
+                // Show the element
+                x.style.display = "block";
+            } else {
+                // Hide the element
+                x.style.display = "none";
+            }
+            // Toggle the classes of the link element
+            linkElement.classList.toggle('unclicked');
+            linkElement.classList.toggle('clicked');
+        }
+    </script>
+</head>
+
+<body>
+<!-- A div with a blue background wraps the entire form -->
+<div class="blue-background" style=" position: fixed">
+    <!-- The form's action is /search_results and the method is POST -->
+    <form action="/search_results" method="post"
+          style="display: flex; flex-direction: row; align-items: center; justify-content: flex-start; width: 200px; color: white;">
+        <!-- The logo image of PubMed -->
+        <a href="/">
+            <img src="https://cdn.ncbi.nlm.nih.gov/pubmed/de3675f9-e3b3-4656-8215-6fc84d4c88ab/core/images/pubmed-logo-white.svg"
+                 alt="PubMed Searcher" style="height: 60px; margin-right: 20px; margin-left: 50px">
+        </a>
+        <!-- The input box for the start date -->
+        <div class="form-group">
+            <label for="start_date" class="label-small">开始时间:</label>
+            <input type="date" id="start_date" name="start_date" class="input-field">
+        </div>
+        <div class="form-group">
+            <label for="end_date" class="label-small">截止时间:</label>
+            <input type="date" id="end_date" name="end_date" class="input-field">
+        </div>
+        <div class="form-group">
+            <label for="max_results" class="label-small">搜索结果数:</label>
+            <input type="text" id="max_results" name="max_results" class="input-field" style="width: 70px">
+        </div>
+        <div class="form-group">
+            <label for="query" class="label-small">搜索关键字:</label>
+            <input type="text" id="query" name="query" placeholder="{{ query if query else 'Enter search query' }}"
+                   class="input-field search-query"
+                   style="margin-right: 50px; width: 200px">
+        </div>
+        <div class="form-group" style="flex-direction: row">
+            <div>
+                <label class="label-small" style="margin-left: 50px; margin-bottom: 100px">搜索:</label>
+                <input type="submit" style="width: 60px;height: 32px; margin-left: 50px" class="input-field">
+            </div>
+        </div>
+    </form>
+    <div class="user-panel">
+        <div>
+            <button class="user-button">
+                欢迎：{{ current_user.username }} !
+            </button>
+            <div>
+                <div id="dropdown" class="dropdown">
+                    <a href="{{ url_for('logout') }}">退出</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="separator"></div>
+<div class="table-container">
+    <table id="resultTable" class="display nowrap order-column stripe">
+        <thead>
+        <tr>
+            <th>选择</th>
+            <th>开始时间</th>
+            <th>截止时间</th>
+            <th>搜索结果数</th>
+            <th>搜索关键字</th>
+            <th>搜索时间</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for result in results %}
+            <tr>
+                <td><input type="checkbox" class="result-checkbox" value="{{ result.search_time }}"></td>
+                <td>{{ result.search_start_date }}</td>
+                <td>{{ result.search_end_date }}</td>
+                <td>{{ result.search_max_results }}</td>
+                <td>{{ result.search_query }}</td>
+                <td>
+                    <a href="#"
+                       onclick="console.log('Link clicked'); sendData({{ result.search_pubmed_ids }}); return false;"
+                       style="color: blue;">
+                        {{ result.search_time }}
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <footer>
+        本网站的内容仅供公司内部参考和使用，未经授权不得对外传播或用于任何商业用途。如有侵权行为，请立即联系相关负责人进行处理。感谢您的理解与配合。
+        by sunbigfly
+    </footer>
+
+</div>
+<div style="position: fixed; top: 90px; left: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+    <div style="width: 70px; border-top: 1px solid #bdbbbb; text-align: center; margin: 20px 0 10px 0; position: relative;">
+        <span style="background-color: white; font-size: 9px; color: #555555; padding: 0 5px; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); white-space: nowrap;">
+            网页跳转
+        </span>
+    </div>
+    <button class="button-div" id="forward-button" style="margin: 5px 0;" title="前进一步">前进</button>
+    <button class="button-div" id="back-button" style="margin: 5px 0;" title="后退一步">后退</button>
+    <div style="width: 70px; border-top: 1px solid #bdbbbb; text-align: center; margin: 20px 0 10px 0; position: relative;">
+        <span style="background-color: white; font-size: 9px; color: #555555; padding: 0 5px; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); white-space: nowrap;">
+            搜索历史
+        </span>
+    </div>
+    <button class="button-div" id="home-button" style="margin: 5px 0;" title="记录你之前所有的搜索历史">搜索历史
+    </button>
+    <button class="button-div" id="search-results-button" style="margin: 5px 0;" title="展示你刚刚你才搜索的结果">
+        刚刚搜索
+    </button>
+    <div style="width: 70px; border-top: 1px solid #bdbbbb; text-align: center; margin: 20px 0 10px 0; position: relative;">
+        <span style="background-color: white; font-size: 9px; color: #555555; padding: 0 5px; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); white-space: nowrap;">
+            仅自己可见
+        </span>
+    </div>
+    <button class="button-div" id="show-interesting-results" style="margin: 5px 0;"
+            title="把文章加入收藏/ 直接进入收藏，自己可见">加/进入<br>收藏
+    </button>
+    <button class="button-div" id="read" style="margin: 5px 0;" title="加入已经看完的文章/ 直接进入已读">加/进入<br>已读
+    </button>
+    <div style="width: 70px; border-top: 1px solid #bdbbbb; text-align: center; margin: 20px 0 10px 0; position: relative;">
+        <span style="background-color: white; font-size: 9px; color: #555555; padding: 0 5px; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); white-space: nowrap;">
+            所有人可见
+        </span>
+    </div>
+    <button class="button-div" id="loved" style="margin: 5px 0;"
+            title="觉得不错、暂时不组会报告的文章分享出来，所有人可见">加/进入<br>喜闻乐见
+    </button>
+    <button class="button-div" id="shared" style="margin: 5px 0;"
+            title="确定要在组会分享的文章，以及展示已在组会分享的文章，所有人可见">加/进入<br>组会分享
+    </button>
+    <div style="width: 70px; border-top: 1px solid #bdbbbb; text-align: center; margin: 20px 0 10px 0; position: relative;">
+        <span style="background-color: white; font-size: 9px; color: #555555; padding: 0 5px; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); white-space: nowrap;">
+            选择操作
+        </span>
+    </div>
+    <button class="button-div" id="select-all" style="margin: 5px 0;" title="全选">全选</button>
+    <button class="button-div" id="deselect-all" style="margin: 5px 0;" title="全不选">全不选</button>
+    <button class="button-div" id="invert-selection" style="margin: 5px 0;" title="反选">反选</button>
+    <div style="width: 70px; border-top: 1px solid #bdbbbb; text-align: center; margin: 20px 0 10px 0; position: relative;">
+        <span style="background-color: white; font-size: 9px; color: #555555; padding: 0 5px; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); white-space: nowrap;">
+            删除所选
+        </span>
+    </div>
+    <button class="button-div" id="cancel-button" style="margin: 5px 0;"
+            title="去掉记录，包括历史记录以及收藏的文章等等等">删除
+    </button>
+    <div style="width: 70px; border-top: 1px solid #bdbbbb; text-align: center; margin: 20px 0 10px 0; position: relative;">
+        <span style="background-color: white; font-size: 9px; color: #555555; padding: 0 5px; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); white-space: nowrap;">
+            累计搜索
+        </span>
+    </div>
+    <div style="font-size: 10px; margin: 0 0 10px 0;">
+        {{ search_counts_all }}
+    </div>
+</div>
+
+<button id="back-to-top"
+        style="position: fixed; bottom: 20px; right: 100px; display: none; background-color: transparent; border: none; cursor: pointer; padding: 0;">
+    <div style="position: relative;">
+        <div style="border: solid #f66b6b; border-width: 0 3px 3px 0; display: inline-block; padding: 3px; transform: rotate(-135deg); -webkit-transform: rotate(-135deg); position: absolute; left: 0; top: 50%; transform: translateY(-50%) rotate(-135deg);">
+        </div>
+        <span style="color: #f66b6b; position: absolute; left: 20px; top: 50%; transform: translateY(-50%); white-space: nowrap;">返回顶部</span>
+    </div>
+</button>
+
+
+<script>
+    // When the document is ready
+    $.fn.dataTable.ext.order['dom-checkbox'] = function (settings, col) {
+        return this.api().column(col, {order: 'index'}).nodes().map(function (td, i) {
+            return $('input', td).prop('checked') ? '1' : '0';
+        });
+    };
+
+    $(document).ready(function () {
+        var defaultOrderColumn = 5; // 默认按第五列（影响因子）排序
+        var defaultOrderDirection = "desc"; // 默认降序排序
+
+        // 创建一个映射对象，将路由路径映射到排序列和方向
+        var pathToOrderMapping = {
+            "/display_favorites_pubmed_id": {column: 5, direction: "desc"},
+            "/display_read_pubmed_id": {column: 5, direction: "desc"},
+            "/display_loved_pubmed_id": {column: 5, direction: "desc"},
+            "/display_shared_pubmed_id": {column: 5, direction: "desc"}
+        };
+
+        // 获取当前路由路径
+        var currentPath = window.location.pathname;
+        console.log("Current Path:", currentPath);
+
+        // 根据路由路径获取排序列和方向，如果没有匹配的路径则使用默认值
+        var orderSettings = pathToOrderMapping[currentPath] || {
+            column: defaultOrderColumn,
+            direction: defaultOrderDirection
+        };
+        console.log("Order Settings:", orderSettings);
+
+        $('#resultTable').DataTable({
+            "columns": [
+                {"orderDataType": "dom-checkbox"},
+                null,
+                null,
+                null,
+                null,
+                {"type": "date"}  // 添加第六列，指定类型为日期
+            ],
+            "order": [[orderSettings.column, orderSettings.direction]],  // 动态设置排序列
+            "pageLength": 10,  // 默认每页显示50条
+            "lengthMenu": [10, 50, 100, 200, 500]  // 每页显示条数的选项
+        });
+    });
+
+
+    // 获取按钮元素
+    var btn = document.getElementById('back-to-top');
+    // 当用户滚动页面时，执行scrollFunction
+    window.onscroll = function () {
+        scrollFunction()
+    };
+
+    function scrollFunction() {
+        // 当页面向下滚动100px时，显示按钮
+        if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+            btn.style.display = "block";
+        } else {
+            btn.style.display = "none";
+        }
+    }
+
+    // 添加点击事件，滚动到页面顶部
+    btn.addEventListener('click', function () {
+        document.body.scrollTop = 0; // For Safari
+        document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    });
+
+    // Get the button and the dropdown
+    var button = document.querySelector("button");
+    var dropdown = document.getElementById("dropdown");
+
+    // When the user clicks on the button, toggle the dropdown
+    button.onclick = function (event) {
+        event.stopPropagation();
+        dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+    };
+
+    // When the user clicks anywhere outside of the dropdown, close it
+    window.onclick = function (event) {
+        if (!event.target.matches('button')) {
+            dropdown.style.display = "none";
+        }
+    };
+
+    function sendData(pubmedIds) {
+        console.log('sendData called with pubmedIds:', pubmedIds); // 调试信息
+        fetch('/display_search_history', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({search_history_pubmed_ids: pubmedIds})
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        }).then(data => {
+            console.log('Success:', data);
+            // 在这里添加页面跳转逻辑
+            window.location.href = '/display_search_history'; // 确保跳转到正确的URL
+        }).catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+
+    function getCheckboxes() {
+        return document.getElementsByClassName('result-checkbox');
+    }
+
+    function getCheckedValues(checkboxes) {
+        var checkedResults = [];
+        for (var i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i].checked) {
+                checkedResults.push(checkboxes[i].value);
+            }
+        }
+        return checkedResults;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+    // 获取特定的六个按钮
+    const buttonIds = [
+        'show-interesting-results',
+        'read',
+        'loved',
+        'shared',
+        'home-button',
+        'search-results-button'
+    ];
+    const buttons = buttonIds.map(id => document.getElementById(id)).filter(button => button !== null);
+
+    // 检查本地存储并设置按钮背景色
+    buttons.forEach(button => {
+        const buttonId = button.id;
+        const storedColor = localStorage.getItem('active-button');
+        if (storedColor === buttonId) {
+            button.style.backgroundColor = '#95c996';
+        }
+
+        // 添加点击事件监听器
+        button.addEventListener('click', function () {
+            // 清除所有按钮的背景色
+            buttons.forEach(btn => {
+                btn.style.backgroundColor = '';
+                btn.style.border = '';
+                btn.style.borderRadius = '';
+            });
+
+            // 设置当前点击按钮的背景色
+            const newColor = '#95c996';
+            button.style.backgroundColor = newColor;
+            button.style.borderRadius = '2px';
+            button.style.border = '0.2px solid grey'; // make the border thinner and grey
+
+            // 存储当前激活的按钮到本地存储
+            localStorage.setItem('active-button', buttonId);
+
+            // 设置刷新标志
+            localStorage.setItem('needs-refresh', 'true');
+
+            // 跳转到目标页面
+            const targetUrlMap = {
+                'show-interesting-results': '/display_favorites_pubmed_id',
+                'read': '/display_read_pubmed_id',
+                'loved': '/display_loved_pubmed_id',
+                'shared': '/display_shared_pubmed_id',
+                'home-button': '/',
+                'search-results-button': '/search_results'
+            };
+
+            const targetUrl = targetUrlMap[buttonId];
+            if (targetUrl) {
+                window.location.href = targetUrl;
+            }
+        });
+    });
+
+    // 在页面加载时检查是否需要刷新
+    if (localStorage.getItem('needs-refresh') === 'true') {
+        localStorage.removeItem('needs-refresh');
+        window.location.reload();
+    }
+});
+
+
+
+    // 当用户点击按钮时，滚动到页面顶部
+    btn.onclick = function () {
+        document.body.scrollTop = 0; // For Safari
+        document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    }
+
+    // Event listeners for the select all, deselect all, and invert selection buttons
+    document.getElementById('select-all').addEventListener('click', function () {
+        // Get all the result checkboxes
+        var checkboxes = document.getElementsByClassName('result-checkbox');
+        // Loop through all the checkboxes
+        for (var i = 0; i < checkboxes.length; i++) {
+            // Set the checked state of each checkbox to true
+            checkboxes[i].checked = true;
+        }
+    });
+
+    document.getElementById('deselect-all').addEventListener('click', function () {
+        // Get all the result checkboxes
+        var checkboxes = document.getElementsByClassName('result-checkbox');
+        // Loop through all the checkboxes
+        for (var i = 0; i < checkboxes.length; i++) {
+            // Set the checked state of each checkbox to false
+            checkboxes[i].checked = false;
+        }
+    });
+
+    document.getElementById('invert-selection').addEventListener('click', function () {
+        var checkboxes = document.querySelectorAll('.result-checkbox');
+        checkboxes.forEach(checkbox => checkbox.checked = !checkbox.checked);
+    });
+
+    // Event listeners for the navigation buttons
+    document.getElementById('home-button').addEventListener('click', function () {
+        window.location.href = '/';  // Navigate to the home page
+    });
+
+    document.getElementById('forward-button').addEventListener('click', function () {
+        window.history.forward();  // Go forward in the browser history
+    });
+
+    document.getElementById('back-button').addEventListener('click', function () {
+        window.history.back();  // Go back in the browser history
+    });
+    document.getElementById('search-results-button').addEventListener('click', function () {
+        window.location.href = '/search_results';  // Navigate to the search results page
+    });
+
+    // When the page is loaded
+    window.onload = function () {
+        // Get the current date and set it to 2 weeks ago
+        var today = new Date();
+        today.setDate(today.getDate() - 14);
+        var startDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        // Get the current date as the end date
+        var endDate = new Date();
+
+        // Set the default values of the start date and end date input boxes
+        document.getElementById('start_date').valueAsDate = startDate;
+        document.getElementById('end_date').valueAsDate = endDate;
+
+        // Set the default value of the number of search results input box to '100'
+        document.getElementById('max_results').value = '100';
+
+        // Define a function to update the display
+        function updateDisplay(inputId, displayId) {
+            // Get the input element and the display element
+            var inputElement = document.getElementById(inputId);
+            var displayElement = document.getElementById(displayId);
+            // If the display element exists, set its text content to the value of the input element
+            if (displayElement) {
+                displayElement.textContent = inputElement.value;
+            }
+        }
+
+        // Call the update display function to display the default values
+        updateDisplay('start_date', 'display_start_date');
+        updateDisplay('end_date', 'display_end_date');
+        updateDisplay('max_results', 'display_max_results');
+        updateDisplay('query', 'display_query');
+
+        function handleAjaxRequest(url, dataKey, checkedResults, redirectUrl) {
+            console.log("AJAX request initiated..."); // 添加日志信息
+            $.ajax({
+                url: url,
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({[dataKey]: checkedResults}),
+                success: function (response) {
+                    console.log("AJAX request successful:", response); // 打印服务器响应
+                    window.location.href = redirectUrl;
+                    window.location.reload();  // 刷新当前页面以反映更改
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error: " + error);
+                }
+            });
+        }
+
+        function confirmAndHandleAjaxRequest(url, dataKey, checkedResults, redirectUrl, operationType) {
+            if (checkedResults.length > 0) {
+                if (confirm(`即将${operationType} Pubmed id : \n${checkedResults.join(' | ')}\n\n请确认？`)) {
+                    handleAjaxRequest(url, dataKey, checkedResults, redirectUrl);
+                }
+            } else {
+                handleAjaxRequest(url, dataKey, [], redirectUrl); // 发送空数组到后端
+            }
+        }
+
+        document.getElementById('show-interesting-results').addEventListener('click', function () {
+            var checkedResults = getCheckedValues(getCheckboxes());
+            confirmAndHandleAjaxRequest("/favorite_check", "favorite_pubmed_id", checkedResults, "/display_favorites_pubmed_id", "收藏的");
+        });
+
+        document.getElementById('read').addEventListener('click', function () {
+            var checkedResults = getCheckedValues(getCheckboxes());
+            confirmAndHandleAjaxRequest("/read_check", "read_pubmed_id", checkedResults, "/display_read_pubmed_id", "已读的");
+        });
+
+        document.getElementById('loved').addEventListener('click', function () {
+            var checkedResults = getCheckedValues(getCheckboxes());
+            confirmAndHandleAjaxRequest("/loved_check", "loved_pubmed_id", checkedResults, "/display_loved_pubmed_id", "加入喜闻乐见的");
+        });
+
+        document.getElementById('shared').addEventListener('click', function () {
+            var checkedResults = getCheckedValues(getCheckboxes());
+            confirmAndHandleAjaxRequest("/shared_check", "shared_pubmed_id", checkedResults, "/display_shared_pubmed_id", "加入组会分享的");
+        });
+
+
+        document.getElementById('cancel-button').addEventListener('click', function () {
+            var checkedResults = getCheckedValues(getCheckboxes());
+            if (checkedResults.length === 0) {
+                console.log("没有选中任何项");
+                return;  // 如果checkedResults为空，就直接返回
+            }
+
+            var routeName = window.location.pathname.split('/')[1];  // 获取路由名
+            var url;
+            switch (routeName) {
+                case 'display_favorites_pubmed_id':
+                    url = "/cancel_favorite_results";
+                    break;
+                case 'display_read_pubmed_id':
+                    url = "/cancel_read_results";
+                    break;
+                case 'display_loved_pubmed_id':
+                    url = "/cancel_loved_results";
+                    break;
+                case 'display_shared_pubmed_id':
+                    url = "/cancel_shared_results";
+                    break;
+                case '':  // 当路径为根路径时，routeName 会是空字符串
+                    url = "/cancel_search_history";
+                    break;
+                default:
+                    confirm(`"此页面 pubmed id 无法删除"`);
+                    console.error("未知的路由名：" + routeName);
+                    return;
+            }
+
+            if (confirm(`即将删除: \n${checkedResults.join(' | ')}\n\n请确认？`)) {
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({cancel_pubmed_id: checkedResults}),
+                    success: function (response) {
+                        if (response.status === "success") {
+                            if (response.not_authorized_list && response.not_authorized_list.length > 0) {
+                                alert("You are not authorized to cancel these results: \n" + response.not_authorized_list.join(' | '));
+                            }
+                            window.location.reload();  // 刷新当前页面以反映更改
+                        } else {
+                            console.error("Failed to cancel results: " + response.message);
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.error("Request failed: " + textStatus + ", " + errorThrown);
+                    }
+                });
+            } else {
+                console.log("用户取消了操作");
+            }
+        });
+    };
+</script>
+
+</body>
+</html>
