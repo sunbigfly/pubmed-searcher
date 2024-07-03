@@ -13,14 +13,11 @@
 ├── forms.py                # 表单类定义
 ├── models.py               # 数据库模型定义
 ├── requirements.txt        # 项目依赖
-├── restart.sh              # 重启应用的脚本
 ├── static/                 # 静态文件目录
 ├── templates/              # HTML 模板目录
 ├── tmp/                    # 临时文件夹
 ├── journal_data_2024.json  # JSON 数据文件
 ├── getpubmedinfo.py        # PubMed 数据获取脚本
-├── pycache/                # Python 缓存目录
-└── gunicorn.log            # Gunicorn 日志文件
 ```
 
 ## 功能介绍
@@ -54,15 +51,31 @@
 
 ### 运行项目
 
-1. **安装依赖**：在项目根目录下运行：
+1. **安装 Conda**：如果你还没有安装 Conda，可以从 [Conda 官网](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) 下载并安装。
+
+2. **创建 Conda 环境**：在项目根目录下运行以下命令创建一个新的 Conda 环境：
+
+   ```bash
+   conda create --name pubmed_search python=3.9
+   ```
+
+   这里我们创建了一个名为 `pubmed_search` 的环境，并指定了 Python 版本为 3.9。你可以根据需要调整 Python 版本。
+
+3. **激活 Conda 环境**：激活刚刚创建的 Conda 环境：
+
+   ```bash
+   conda activate pubmed_search
+   ```
+
+4. **安装依赖**：在激活的 Conda 环境中，使用 `pip` 安装项目依赖：
 
    ```bash
    pip install -r requirements.txt
    ```
 
-2. **设置环境变量**：根据 `config.py` 中的配置，设置必要的环境变量。
+5. **设置环境变量**：根据 `config.py` 中的配置，设置必要的环境变量。你可以通过在命令行中导出环境变量，或者创建一个 `.env` 文件来设置这些变量。
 
-3. **运行应用**：在开发环境中，你可以直接运行 `app.py`：
+6. **运行应用**：在开发环境中，你可以直接运行 `app.py`：
 
    ```bash
    python app.py
@@ -74,7 +87,7 @@
    flask run
    ```
 
-4. **使用 Gunicorn 部署**：在生产环境中使用 Gunicorn，可以运行以下命令：
+7. **使用 Gunicorn 部署**：在生产环境中使用 Gunicorn，可以运行以下命令：
 
    ```bash
    gunicorn -w 4 -b 0.0.0.0:8000 app:app
@@ -82,16 +95,10 @@
 
    这将使用 4 个工作进程在端口 8000 上运行你的应用。
 
-5. **重启应用**：如果你需要重启应用，可以运行 `restart.sh` 脚本：
-
-   ```bash
-   ./restart.sh
-   ```
 
 ### 使用页面
 
 ![image](https://github.com/sunbigfly/pubmed-searcher/assets/58769230/1f7667c7-40cf-42b7-9d2d-05f124cbcce7)
-
 
 1. 打开网页。
 2. 在搜索表单中输入开始时间、截止时间、搜索结果数和搜索关键字。
