@@ -109,8 +109,8 @@
 
 by sunbigfly
 
-希望这个项目对您有所帮助。如有任何疑问，请随时联系相关负责人。祝您的 Flask 项目顺利！
 
----
+## License
+This project is released under MIT License[https://github.com/fer-aguirre/pubmed-scraper/blob/main/LICENSE].
 
 请根据你的项目需求和实际情况调整上述步骤和代码。如有任何问题，请随时询问。
