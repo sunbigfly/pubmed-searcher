@@ -111,6 +111,6 @@ by sunbigfly
 
 
 ## License
-This project is released under MIT License[https://github.com/fer-aguirre/pubmed-scraper/blob/main/LICENSE].
+This project is released under MIT License.
 
 请根据你的项目需求和实际情况调整上述步骤和代码。如有任何问题，请随时询问。
