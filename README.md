@@ -70,7 +70,8 @@ Flask 项目的目录结构。为了帮助你更好地理解和管理这个项�
 
 ## 功能介绍
 
-![Uploading image.png…]()
+![image](https://github.com/sunbigfly/pubmed-searcher/assets/58769230/a097250b-2cb3-4c04-9308-680642173448)
+
 
 
 
