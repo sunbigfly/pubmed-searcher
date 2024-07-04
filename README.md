@@ -80,6 +80,8 @@
    ```bash
    python app.py
    ```
+   > getpubmedinfo.py 里的 Entrez.email 与 Entrez.api_key 需要自己配置，不然Pubmed Fetch 的请求API 速率受限
+   
 
    或者使用 Flask 提供的命令：
 
