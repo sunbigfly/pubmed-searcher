@@ -30,8 +30,8 @@ class PubmedSearch:
     @staticmethod
     def search_pubmed_ids(keyword, start_date=None, end_date=None, retmax=100):
         # 设置 Entrez 的电子邮件和 API 密钥
-        Entrez.email = "sunshinesunbigfly@gmail.com"
-        Entrez.api_key = "ded9b0330c52fe2f6020a7a6b8e4b025cf08"
+        Entrez.email = "xxx"  # 需要自己注册邮箱
+        Entrez.api_key = "xxxxxxxxxxxxxxxxxxxxxxxxx"  # Pubmed API 自己获取
 
         # If end_date is None, use the current date
         if end_date is None:
