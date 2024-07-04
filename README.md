@@ -117,7 +117,7 @@
 
 
 ### License
-This project is released under MIT License.
+This project is released under [MIT License](https://github.com/sunbigfly/pubmed-searcher?tab=MIT-1-ov-file).
 
 
 ### 作者
